@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Credit Card Fraud Detection</title>
+  <style>
+    /* Gradient background */
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      padding: 40px;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      color: #fff;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+
+    /* Card style form */
+    form {
+      background-color: #fff;
+      max-width: 450px;
+      margin: 0 auto;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background: #ff6b6b;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #ff4757;
+    }
+
+    #result {
+      max-width: 450px;
+      margin: 20px auto 0 auto;
+      padding: 20px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+
+    /* FRAUD vs NOT FRAUD colors */
+    .fraud {
+      background-color: #ff4d4d;
+      color: #fff;
+    }
+
+    .not-fraud {
+      background-color: #2ed573;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+<h2>💳 Credit Card Fraud Detection</h2>
+
+<form id="fraudForm">
+  <label>Transaction Time (days since first transaction):</label>
+  <input type="number" step="any" id="time" placeholder="e.g. 12" required>
+
+  <label>Transaction Amount ($):</label>
+  <input type="number" step="any" id="amount" placeholder="e.g. 150.50" required>
+
+  <label>Transaction Type:</label>
+  <select id="type">
+    <option value="online">Online</option>
+    <option value="in-store">In-store</option>
+    <option value="atm">ATM</option>
+  </select>
+
+  <button type="submit">Predict Fraud</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+document.getElementById("fraudForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  const features = {
+    time: parseFloat(document.getElementById("time").value),
+    amount: parseFloat(document.getElementById("amount").value),
+    type: document.getElementById("type").value
+  };
+
+  try {
+    const response = await fetch("/predict", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(features)
+    });
+
+    const result = await response.json();
+    const resultDiv = document.getElementById("result");
+
+    if(result.prediction === 1) {
+      resultDiv.className = "fraud";
+      resultDiv.innerText = `🚨 FRAUD! Probability: ${result.probability.toFixed(2)}`;
+    } else {
+      resultDiv.className = "not-fraud";
+      resultDiv.innerText = `✅ NOT FRAUD. Probability: ${result.probability.toFixed(2)}`;
+    }
+
+  } catch (err) {
+    alert("Error connecting to backend. Make sure Flask is running!");
+    console.error(err);
+  }
+});
+</script>
+
+</body>
+</html>
